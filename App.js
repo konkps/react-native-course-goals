@@ -1,38 +1,41 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { Button, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import GoalInput from './components/GoalInput';
+import GoalItem from './components/GoalItem';
 
 export default function App() {
 
-  const [enteredGoalText, setEnteredGoalText] = useState();
+  const [modalIsVisible, setModalIsVisible] = useState(false);
   const [courseGoals, setCourseGoals] = useState([]);
 
-
-  const goalInputHandler = (text) => {
-    setEnteredGoalText(text);
+  const togglemodalVisibility = () => {
+    setModalIsVisible(prevState => !prevState)
   }
-  const addGoalHandler = () => {
-    setCourseGoals(prevGoals => [...prevGoals, { text: enteredGoalText, id: Math.random().toString() }]);
-    setEnteredGoalText();
+  const addGoalHandler = (enteredGoalText) => {
+    setCourseGoals(prevGoals => [
+      ...prevGoals, {
+        text: enteredGoalText,
+        id: Math.random().toString()
+      }]);
+      togglemodalVisibility()
   }
-  const removeGoalHandler = (e) => {
-    console.log(e.target.value);
+  const removeGoalHandler = (id) => {
+    setCourseGoals(prevCourseGoals => {
+      return prevCourseGoals.filter(goal => goal.id !== id)
+    })
   }
   return (
     <View style={styles.appContainer}>
 
-      {/* <Text style={styles.dummyText} >Hello World !!</Text> */}
+      <Button title={'Add New Goal'} color='#5e00cc' onPress={togglemodalVisibility} />
 
-      <View style={styles.inputContainer} >
-        <TextInput
-          style={styles.textInput}
-          placeholder={"Enter your goal"}
-          onChangeText={goalInputHandler}
-          value={enteredGoalText}
-        />
-        <Button title="ADD GOAL" onPress={addGoalHandler} />
-      </View>
-
+      {/* {modalIsVisible && */}
+        <GoalInput
+          addGoalHandler={addGoalHandler}
+          visible={modalIsVisible} 
+          onToggleModal={togglemodalVisibility} />
+      {/* } */}
       <Text> Goals List </Text>
       <View style={styles.goalsContainer}>
 
@@ -41,11 +44,13 @@ export default function App() {
           alwaysBounceVertical={false}
           keyExtractor={(item, index) => item.id}
           renderItem={itemData => {
-            return <View style={styles.goalItem} >
-              <Text style={styles.goalText} onPress={removeGoalHandler}>
-                {itemData.item.text}
-              </Text>
-            </View>
+            return (
+              <GoalItem
+                text={itemData.item.text}
+                id={itemData.item.id}
+                onDeleteItem={removeGoalHandler}
+              />
+            )
           }}
 
         />
@@ -71,33 +76,8 @@ const styles = StyleSheet.create({
     paddingVertical: 50,
     paddingHorizontal: 16
   },
-  inputContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 18,
-    borderBottomWidth: 1,
-    borderColor: "#ccc"
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    width: '70%',
-    padding: 5,
-    marginRight: 8
-  },
   goalsContainer: {
     flex: 4
-  },
-  goalItem: {
-    margin: 8,
-    borderRadius: 6,
-    backgroundColor: '#5e0acc',
-    padding: 6
-  },
-  goalText: {
-    color: 'white'
   }
   // container: {
   //   flex: 1,
